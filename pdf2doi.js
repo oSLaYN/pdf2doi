@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const pdf = require('pdf-parse');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const doi2bib = require('doi2bib');
 
 let pdf2doi = { verbose: false };
 
@@ -126,6 +127,20 @@ pdf2doi.fromFile = async function(fileName) {
         return data
     } catch (error) {
         console.error('Error reading file:', error);
+        throw error;
+    }
+};
+
+pdf2doi.getDOI = async (filePath) => {
+    try {    
+        const doi = await pdf2doi.fromFile(filePath);
+        if (doi && doi.doi) {
+            const citation = await doi2bib.getCitation(doi.doi);
+            return citation;
+        }
+        return null;
+    } catch (error) {
+        console.error("An Error Occurred:", error);
         throw error;
     }
 };
